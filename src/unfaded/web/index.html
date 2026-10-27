@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unfaded</title>
+<meta name="description" content="Restore old family photos on your own GPU and see exactly what each step changed.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem("unfaded.theme");
+    var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = saved || (dark ? "dark" : "light");
+  })();
+</script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./" aria-label="Unfaded">
+    <img src="logo.svg" alt="" width="34" height="34">
+    <span class="name">Unfaded</span>
+  </a>
+  <p class="tagline" data-i18n="app.tagline"></p>
+  <div class="top-tools">
+    <label class="select">
+      <span class="sr" data-i18n="lang.label"></span>
+      <select id="lang" aria-label="Language"></select>
+    </label>
+    <button id="theme" class="icon-btn" type="button" data-i18n-title="theme.toggle" aria-label="Theme">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path class="sun" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1m0-14.2L17 7M7 17l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="demo-banner" class="banner" hidden>
+  <span data-i18n="demo.banner"></span>
+  <a href="https://github.com/Arthur031221/Unfaded#install" data-i18n="demo.install"></a>
+</div>
+
+<main>
+  <section id="landing" class="landing">
+    <div id="drop" class="drop" tabindex="0" role="button" aria-describedby="drop-hint">
+      <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="8" y="12" width="48" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M8 42l14-14 12 12 8-8 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="42" cy="24" r="4" fill="currentColor"/></svg>
+      <h1 data-i18n="drop.title"></h1>
+      <p id="drop-hint" data-i18n="drop.hint"></p>
+      <button id="browse" class="btn primary" type="button" data-i18n="drop.browse"></button>
+      <input id="file" type="file" accept="image/*" hidden>
+    </div>
+    <div id="examples-wrap" hidden>
+      <h2 data-i18n="examples.title"></h2>
+      <div id="examples" class="examples"></div>
+    </div>
+    <p class="privacy" data-i18n="footer.local"></p>
+  </section>
+
+  <section id="workspace" class="workspace" hidden>
+    <aside class="panel" id="controls">
+      <h2 data-i18n="controls.title"></h2>
+      <fieldset id="step-list" class="steps"></fieldset>
+
+      <label class="slider">
+        <span><span data-i18n="controls.faceStrength"></span> <output id="face-out">35</output>%</span>
+        <input id="face-strength" type="range" min="0" max="100" value="35">
+        <small data-i18n="controls.faceHint"></small>
+      </label>
+      <label class="slider" id="color-wrap">
+        <span><span data-i18n="controls.colorStrength"></span> <output id="color-out">100</output>%</span>
+        <input id="color-strength" type="range" min="0" max="100" value="100">
+      </label>
+      <label class="field">
+        <span data-i18n="controls.scale"></span>
+        <select id="scale"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select>
+      </label>
+      <label class="check"><input id="force-fade" type="checkbox"> <span data-i18n="controls.forceFade"></span></label>
+
+      <button id="run" class="btn primary wide" type="button" data-i18n="controls.run"></button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div id="face-list" class="face-list"></div>
+      <button id="new" class="btn quiet wide" type="button" data-i18n="controls.another"></button>
+    </aside>
+
+    <div class="stage">
+      <div class="tabs" role="tablist" id="mode-tabs">
+        <button role="tab" id="tab-scan" data-mode="scan" data-i18n="tabs.scan"></button>
+        <button role="tab" id="tab-result" data-mode="result" data-i18n="tabs.result"></button>
+      </div>
+
+      <div id="scan-view" class="view">
+        <div class="toolbar">
+          <button id="add-quad" class="btn" type="button" data-i18n="scan.add"></button>
+          <button id="rotate-quad" class="btn" type="button" data-i18n="scan.rotate"></button>
+          <button id="remove-quad" class="btn" type="button" data-i18n="scan.remove"></button>
+          <span class="hint" id="scan-note"></span>
+        </div>
+        <div class="canvas-box" id="scan-box">
+          <img id="scan-img" alt="" draggable="false">
+          <svg id="scan-svg" aria-label="Print outlines"></svg>
+        </div>
+        <p class="hint" data-i18n="scan.hint"></p>
+      </div>
+
+      <div id="result-view" class="view" hidden>
+        <div class="photo-tabs" id="photo-tabs" role="tablist"></div>
+        <ol class="pipeline" id="pipeline" aria-label="Pipeline"></ol>
+        <p id="step-note" class="step-note" aria-live="polite"></p>
+
+        <div class="toolbar">
+          <div class="seg" role="group" id="view-seg">
+            <button data-view="result" class="on" data-i18n="view.result"></button>
+            <button data-view="changes" data-i18n="view.changes"></button>
+            <button data-view="invented" data-i18n="view.invented"></button>
+          </div>
+          <button id="edit-mask" class="btn" type="button" data-i18n="mask.edit"></button>
+          <a id="download" class="btn primary" data-i18n="result.download" download></a>
+          <a id="download-all" class="btn" data-i18n="result.downloadAll"></a>
+        </div>
+
+        <div class="compare" id="compare" tabindex="-1">
+          <div class="zoom" id="zoom">
+            <img id="img-before" alt="" draggable="false">
+            <img id="img-after" alt="" draggable="false">
+            <svg id="face-svg" class="overlay" aria-hidden="true"></svg>
+            <canvas id="mask-canvas" class="overlay" hidden></canvas>
+            <div class="divider" id="divider"></div>
+          </div>
+          <span class="tag before" data-i18n="result.before"></span>
+          <span class="tag after" data-i18n="result.after"></span>
+          <input id="split" class="split-range" type="range" min="0" max="100" value="50" aria-label="Before and after">
+        </div>
+
+        <div id="mask-tools" class="toolbar" hidden>
+          <div class="seg" role="group" id="brush-seg">
+            <button data-brush="paint" class="on" data-i18n="mask.paint"></button>
+            <button data-brush="erase" data-i18n="mask.erase"></button>
+          </div>
+          <label class="inline"><span data-i18n="mask.size"></span> <input id="brush-size" type="range" min="2" max="80" value="14"></label>
+          <button id="mask-apply" class="btn primary" type="button" data-i18n="mask.apply"></button>
+          <button id="mask-auto" class="btn" type="button" data-i18n="mask.auto"></button>
+          <button id="mask-cancel" class="btn quiet" type="button" data-i18n="mask.cancel"></button>
+        </div>
+        <p class="hint legend" id="legend"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span id="device"></span>
+  <span>Unfaded <span id="version"></span> · MIT</span>
+  <a href="https://github.com/Arthur031221/Unfaded">GitHub</a>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
