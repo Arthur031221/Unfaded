@@ -64,10 +64,10 @@ unfaded models --fetch
 
 Je l'ai développé sur une RTX 5090 avec torch 2.11 et CUDA 12.8.
 
-Pour éviter le clonage, installez le wheel de la page de version à la place de `pip install -e .` :
+Pour éviter le clonage, installez l'archive de la version étiquetée à la place de `pip install -e .` :
 
 ```bash
-pip install https://github.com/Arthur031221/Unfaded/releases/download/v0.2.1/unfaded-0.2.1-py3-none-any.whl
+pip install https://github.com/Arthur031221/Unfaded/archive/refs/tags/v0.2.1.zip
 ```
 
 </details>

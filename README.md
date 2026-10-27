@@ -64,10 +64,10 @@ unfaded models --fetch
 
 I developed it on an RTX 5090 with torch 2.11 and CUDA 12.8.
 
-To skip the clone, install the wheel from the release page instead of `pip install -e .`:
+To skip the clone, install the tagged archive instead of `pip install -e .`:
 
 ```bash
-pip install https://github.com/Arthur031221/Unfaded/releases/download/v0.2.1/unfaded-0.2.1-py3-none-any.whl
+pip install https://github.com/Arthur031221/Unfaded/archive/refs/tags/v0.2.1.zip
 ```
 
 </details>
@@ -161,7 +161,7 @@ The CPU row uses a smaller image because the full size takes too long, so the tw
 
 ## How it compares
 
-Bringing Old Photos Back to Life, GFPGAN, LaMa and Real-ESRGAN are the models doing the work here, and each is a separate research repository with its own command line. Unfaded doesn't improve on any of them. What it adds is the assembly: one command for a whole scan, a skip rule for steps that would hurt, a per step change view, and a record of what the models invented.
+Bringing Old Photos Back to Life, GFPGAN, LaMa and Real-ESRGAN do the real work here, and each is a separate research repository with its own command line. Unfaded doesn't improve on any of them. What it adds is the assembly: one command for a whole scan, a skip rule for steps that would hurt, a per step change view, and a record of what the models invented.
 
 ## Project layout
 
