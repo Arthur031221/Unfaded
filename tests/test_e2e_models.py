@@ -37,6 +37,22 @@ def test_repair_improves_a_damaged_photo(pipe, example_paths):
     assert psnr(clean, repaired) > psnr(clean, damaged)
 
 
+def test_repair_finds_a_dark_scratch(pipe, example_paths):
+    import cv2
+
+    from unfaded import scratch
+
+    img = imaging.fit_long_side(imaging.load_rgb(example_paths[1]), 900)
+    h, w = img.shape[:2]
+    line = np.zeros((h, w), np.uint8)
+    cv2.polylines(line, [np.array([[w // 5, h // 8], [w // 3, h // 2], [w // 4, h * 7 // 8]])], False, 255, 2)
+    dark = img.copy()
+    dark[line > 0] = 5
+    prob = pipe._model("scratch").detect(dark)
+    mask = scratch.probability_to_mask(prob, grow=0)
+    assert (mask[line > 0] > 0).mean() > 0.6
+
+
 def test_faces_step_reports_what_it_invented(pipe, example_paths):
     img = imaging.fit_long_side(imaging.load_rgb(example_paths[1]), 900)
     run = pipe.run(img, Options(steps=("faces",), scale=1, face_strength=100))

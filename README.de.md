@@ -14,7 +14,7 @@
 
 </div>
 
-Auf vier gemeinfreien Fotos, in die ich mit festen Seeds Kratzer gemalt habe, hob der Reparaturschritt den mittleren PSNR von 26,8 dB auf 29,0 dB, und der Splitter fand auf synthetischen Scans 12 von 12 Abzügen mit einer mittleren Überlappung (IoU) von 0,95. Bei einem der vier Fotos wurde der PSNR etwas schlechter. Mit `unfaded bench` lässt sich das nachvollziehen, die Methode steht unter [Benchmark](#benchmark).
+Auf vier gemeinfreien Fotos, in die ich mit festen Seeds Kratzer gemalt habe, hob der Reparaturschritt den mittleren PSNR von 26,8 dB auf 31,0 dB, und der Splitter fand auf synthetischen Scans 12 von 12 Abzügen mit einer mittleren Überlappung (IoU) von 0,95. Bei allen vier Fotos stieg der PSNR. Mit `unfaded bench` lässt sich das nachvollziehen, die Methode steht unter [Benchmark](#benchmark).
 
 ![Unfaded schneidet vier Abzüge aus einem Scan, restauriert sie und zeigt, was jeder Schritt verändert hat](assets/demo.gif)
 
@@ -27,7 +27,7 @@ Die [Live-Demo](https://arthur031221.github.io/Unfaded/) zeigt echte Ausgaben vo
 | Familienporträt mit Knick, 1891 | ![Vorher](assets/creased-before.jpg) | ![Nachher](assets/creased-after.jpg) |
 | Holzfällerlager, 1926 | ![Vorher](assets/camp-before.jpg) | ![Nachher](assets/camp-after.jpg) |
 
-Beide sind gemeinfreie Scans, denen `scripts/make_demo.py` synthetische Kratzer, einen Knick und Staub hinzugefügt hat. Nachher ist die Standardpipeline: Splitten, Tonwerte, Reparatur, Gesichter mit 35 Prozent. Die dunklen Kratzer in der ersten Zeile sind noch da. Der Detektor findet weiße Kratzer gut und dünne dunkle Linien schlecht, siehe [Grenzen](#grenzen).
+Beide sind gemeinfreie Scans, denen `scripts/make_demo.py` synthetische Kratzer, einen Knick und Staub hinzugefügt hat. Nachher ist die Standardpipeline: Splitten, Tonwerte, Reparatur, Gesichter mit 35 Prozent. Der Detektor läuft auch auf dem invertierten Bild, so findet er die dunklen Kratzer, übersieht aber noch einige dünne dunkle Linien, siehe [Grenzen](#grenzen).
 
 Modelle erfinden Dinge, deshalb habe ich das Werkzeug dazu gebracht, es zu sagen. Jeder Schritt, der Pixel gezeichnet hat, trägt das Etikett "vom Modell erfunden", die Ansicht Erfunden markiert genau wo, und die Originaldatei wird nie angefasst.
 
@@ -124,13 +124,13 @@ Die Weboberfläche zeigt die gefundenen Umrisse, lässt sie korrigieren, führt 
 
 | Foto | PSNR beschädigt | PSNR repariert | SSIM beschädigt | SSIM repariert |
 | --- | --- | --- | --- | --- |
-| Holzfällerlager | 24.90 | 25.57 | 0.954 | 0.948 |
-| Familie King | 28.22 | 32.53 | 0.971 | 0.984 |
-| Familie Knowles | 26.96 | 26.67 | 0.975 | 0.964 |
-| Familie Roy | 27.01 | 31.12 | 0.969 | 0.981 |
-| Mittel | 26.77 | 28.97 | 0.967 | 0.969 |
+| Holzfällerlager | 24.90 | 25.65 | 0.954 | 0.943 |
+| Familie King | 28.22 | 38.88 | 0.971 | 0.988 |
+| Familie Knowles | 26.96 | 27.98 | 0.975 | 0.965 |
+| Familie Roy | 27.01 | 31.68 | 0.969 | 0.982 |
+| Mittel | 26.77 | 31.05 | 0.967 | 0.970 |
 
-Der PSNR verbesserte sich bei drei von vier Fotos und der SSIM bei zwei. Beim Knowles-Porträt markierte der Detektor Teile der Textur als Schaden, und das Füllen machte es etwas schlechter. Der mittlere SSIM-Gewinn beträgt nur 0,002. Alles ist an selbst gemalten Schäden gemessen, die leichter sind als echter Verschleiß, also bitte als Regressionstest lesen und nicht als Versprechen für deine Fotos.
+Der PSNR verbesserte sich bei allen vier Fotos und der SSIM bei zwei. Bei den Fotos vom Holzfällerlager und von Knowles markierte der Detektor Teile der Textur als Schaden, und das Füllen senkte den SSIM etwas. Der mittlere SSIM-Gewinn beträgt nur 0,003. Dunkle Kratzer findet der Detektor auf dem invertierten Bild, mit halbierten Werten. Dieses Gewicht habe ich mit demselben Seed gewählt. Bei den Seeds 11 und 23 lag der mittlere PSNR-Gewinn gegenüber dem früheren Detektor mit einem Durchlauf bei 0,9 dB und 0,2 dB. Alles ist an selbst gemalten Schäden gemessen, die leichter sind als echter Verschleiß, also bitte als Regressionstest lesen und nicht als Versprechen für deine Fotos.
 
 **Splitten.** Die Beispielabzüge liegen zu viert pro Scan auf drei Hintergründen in zufälligen Winkeln. Alle 12 Abzüge wurden gefunden, mittlere IoU 0,952, schlechteste 0,931.
 
@@ -138,15 +138,15 @@ Der PSNR verbesserte sich bei drei von vier Fotos und der SSIM bei zwei. Beim Kn
 
 | Gerät | Bildgröße | fade | repair | faces | Farbe | Vergrößern | gesamt |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RTX 5090 | 960 x 1200 | 0.07 s | 0.36 s | 0.27 s | 0.08 s | 1.47 s | 2.26 s |
-| Ryzen 5 7500F, CPU | 480 x 600 | 0.01 s | 6.86 s | 19.36 s | 2.47 s | 106.42 s | 135.13 s |
+| RTX 5090 | 960 x 1200 | 0.07 s | 0.40 s | 0.22 s | 0.06 s | 1.51 s | 2.26 s |
+| Ryzen 5 7500F, CPU | 480 x 600 | 0.02 s | 9.26 s | 12.32 s | 1.87 s | 81.80 s | 105.27 s |
 
-Die CPU-Zeile nutzt ein kleineres Bild, weil die volle Größe zu lange dauert, deshalb sind die beiden Zeilen der Größe nach nicht vergleichbar.
+Die CPU-Zeile nutzt ein kleineres Bild, weil die volle Größe zu lange dauert, deshalb sind die beiden Zeilen der Größe nach nicht vergleichbar. Ohne die Vergrößerung, die standardmäßig aus ist, dauert der CPU-Lauf etwa 22 Sekunden.
 
 ## Grenzen
 
-- Der Kratzerdetektor ist vor allem auf helle Kratzer trainiert. Dünne dunkle Linien übersieht er oft, was in der Vorher-nachher-Tabelle zu sehen ist. Male sie im Maskeneditor.
-- Auf texturierten oder schmutzigen Flächen liefert der Detektor Fehlalarme, so wurde das Knowles-Porträt schlechter. Die 15-Prozent-Sperre stoppt nur die schlimmsten Fälle.
+- Der Kratzerdetektor ist vor allem auf helle Kratzer trainiert. Dunkle Kratzer findet er auf dem invertierten Bild mit halbem Gewicht, deshalb übersieht er dünne dunkle Linien weiterhin öfter als helle. Male sie im Maskeneditor.
+- Auf texturierten oder schmutzigen Flächen liefert der Detektor Fehlalarme, so verloren die Fotos vom Holzfällerlager und von Knowles etwas SSIM. Die 15-Prozent-Sperre stoppt nur die schlimmsten Fälle.
 - GFPGAN zeichnet Gesichter. Bei Stärke 100 kann ein Gesicht wie eine andere Person aussehen. Der Standard ist deshalb 35, und die Ansicht Erfunden zeigt, wo es gewirkt hat.
 - DDColor rät die Farbe und neigt zu einem warmen Stich. Behandle kolorierte Ausgaben als Illustration.
 - Die Tonwertwiederherstellung macht Sepiaabzüge neutral grau.

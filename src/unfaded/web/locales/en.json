@@ -76,6 +76,7 @@
  "status.working": "Working",
  "status.step": "{step}, photo {n}",
  "status.done": "Done in {s} s",
+ "status.maskDropped": "Your hand-painted mask for photo {n} was discarded because the outline changed.",
  "faces.n": "Face {n}",
  "legend.changes": "Brighter means a bigger change",
  "legend.invented": "Pink marks pixels the model drew",

@@ -112,3 +112,42 @@ def test_old_sessions_are_dropped():
     with pytest.raises(HTTPException):
         store.get("0")
     assert store.get(str(server.MAX_SESSIONS + 1))
+
+
+def test_foreign_host_headers_are_refused_when_bound_to_loopback():
+    guarded = TestClient(create_app("cpu", host="127.0.0.1"))
+    assert guarded.get("/api/info", headers={"Host": "evil.example:8765"}).status_code == 403
+    assert guarded.get("/api/info", headers={"Host": "localhost:8765"}).status_code == 200
+    assert guarded.get("/api/info", headers={"Host": "127.0.0.1:8765"}).status_code == 200
+    assert guarded.get("/api/info", headers={"Host": "[::1]:8765"}).status_code == 200
+    assert guarded.get("/api/info", headers={"Host": "[::1]"}).status_code == 200
+    assert guarded.get("/api/info", headers={"Host": "localhost"}).status_code == 200
+    assert guarded.get("/api/info", headers={"Host": "evil.example"}).status_code == 403
+    assert guarded.get("/api/info", headers={"Host": "[::2]"}).status_code == 403
+
+
+def test_a_lan_address_is_accepted_only_when_it_was_asked_for():
+    lan = TestClient(create_app("cpu", host="192.168.1.20"))
+    assert lan.get("/api/info", headers={"Host": "192.168.1.20:8765"}).status_code == 200
+    assert lan.get("/api/info", headers={"Host": "evil.example"}).status_code == 403
+
+
+def test_binding_to_every_interface_disables_the_host_check():
+    wide = TestClient(create_app("cpu", host="0.0.0.0"))
+    assert wide.get("/api/info", headers={"Host": "192.168.1.20:8765"}).status_code == 200
+
+
+def test_a_hand_mask_is_dropped_when_its_print_changes(client, scan_bytes):
+    sid = open_session(client, scan_bytes)["id"]
+    run = client.post(f"/api/session/{sid}/run", json={"steps": ["split"]}).json()
+    assert run["masks_dropped"] == []
+    w, h = run["photos"][0]["original"]
+    png = cv2.imencode(".png", np.full((h, w), 255, np.uint8))[1].tobytes()
+    assert client.put(f"/api/session/{sid}/photo/0/mask", content=png).status_code == 200
+    again = client.post(f"/api/session/{sid}/run", json={"steps": ["split"]}).json()
+    assert again["masks_dropped"] == []
+    assert again["photos"][0]["has_mask"] is False  # split only, repair never ran
+    turned = client.post(f"/api/session/{sid}/run", json={"steps": ["split"], "quarter_turns": {"0": 1}}).json()
+    assert turned["masks_dropped"] == [0]
+    last = client.post(f"/api/session/{sid}/run", json={"steps": ["split"], "quarter_turns": {"0": 1}}).json()
+    assert last["masks_dropped"] == []

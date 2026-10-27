@@ -14,7 +14,7 @@
 
 </div>
 
-Em quatro fotos de domínio público com arranhões que desenhei com sementes fixas, a etapa de reparo elevou o PSNR médio de 26,8 dB para 29,0 dB, e o separador achou 12 de 12 cópias em scans sintéticos, com sobreposição média (IoU) de 0,95. O PSNR de uma das quatro fotos piorou um pouco. Dá para reproduzir com `unfaded bench`, e o método está em [Benchmark](#benchmark).
+Em quatro fotos de domínio público com arranhões que desenhei com sementes fixas, a etapa de reparo elevou o PSNR médio de 26,8 dB para 31,0 dB, e o separador achou 12 de 12 cópias em scans sintéticos, com sobreposição média (IoU) de 0,95. O PSNR melhorou nas quatro fotos. Dá para reproduzir com `unfaded bench`, e o método está em [Benchmark](#benchmark).
 
 ![Unfaded recorta quatro cópias de um scan, restaura e mostra o que cada etapa mudou](assets/demo.gif)
 
@@ -27,7 +27,7 @@ A [demo ao vivo](https://arthur031221.github.io/Unfaded/) usa a saída real de t
 | Retrato de família com vinco, 1891 | ![Antes](assets/creased-before.jpg) | ![Depois](assets/creased-after.jpg) |
 | Acampamento madeireiro, 1926 | ![Antes](assets/camp-before.jpg) | ![Depois](assets/camp-after.jpg) |
 
-Os dois são scans de domínio público aos quais `scripts/make_demo.py` adicionou arranhões, um vinco e poeira sintéticos. Depois é o fluxo padrão: separar, tom, reparar e rostos a 35 por cento. Os arranhões escuros da primeira linha continuam lá. O detector acha bem arranhões brancos e mal linhas finas escuras, veja [Limites](#limites).
+Os dois são scans de domínio público aos quais `scripts/make_demo.py` adicionou arranhões, um vinco e poeira sintéticos. Depois é o fluxo padrão: separar, tom, reparar e rostos a 35 por cento. O detector também roda sobre a imagem invertida, assim ele acha os arranhões escuros, mas ainda deixa passar algumas linhas finas escuras, veja [Limites](#limites).
 
 Modelos inventam coisas, então fiz a ferramenta dizer isso. Toda etapa que desenhou pixels leva o rótulo "inventado pelo modelo", a visão Inventado pinta exatamente onde, e o arquivo original nunca é tocado.
 
@@ -124,13 +124,13 @@ A interface web mostra os contornos encontrados, deixa você corrigi-los, execut
 
 | Foto | PSNR danificada | PSNR reparada | SSIM danificada | SSIM reparada |
 | --- | --- | --- | --- | --- |
-| Acampamento madeireiro | 24.90 | 25.57 | 0.954 | 0.948 |
-| Família King | 28.22 | 32.53 | 0.971 | 0.984 |
-| Família Knowles | 26.96 | 26.67 | 0.975 | 0.964 |
-| Família Roy | 27.01 | 31.12 | 0.969 | 0.981 |
-| Média | 26.77 | 28.97 | 0.967 | 0.969 |
+| Acampamento madeireiro | 24.90 | 25.65 | 0.954 | 0.943 |
+| Família King | 28.22 | 38.88 | 0.971 | 0.988 |
+| Família Knowles | 26.96 | 27.98 | 0.975 | 0.965 |
+| Família Roy | 27.01 | 31.68 | 0.969 | 0.982 |
+| Média | 26.77 | 31.05 | 0.967 | 0.970 |
 
-O PSNR melhorou em três de quatro fotos e o SSIM em duas. No retrato Knowles o detector marcou parte da textura como dano e o preenchimento piorou um pouco. O ganho médio de SSIM é de apenas 0,002. Tudo é medido em danos que eu mesmo desenhei, que são mais fáceis que o desgaste real, então leia como um teste de regressão e não como uma promessa sobre as suas fotos.
+O PSNR melhorou nas quatro fotos e o SSIM em duas. Nas fotos do acampamento e de Knowles o detector marcou parte da textura como dano e o preenchimento baixou um pouco o SSIM. O ganho médio de SSIM é de apenas 0,003. Os arranhões escuros são achados rodando o detector sobre a imagem invertida, com as pontuações pela metade. Escolhi esse peso com esta mesma semente. Com as sementes 11 e 23, o ganho médio de PSNR sobre o detector anterior de uma única passada foi de 0,9 dB e 0,2 dB. Tudo é medido em danos que eu mesmo desenhei, que são mais fáceis que o desgaste real, então leia como um teste de regressão e não como uma promessa sobre as suas fotos.
 
 **Separar.** As cópias de exemplo são colocadas quatro por scan, em três fundos e com ângulos aleatórios. As 12 cópias foram achadas, IoU médio 0,952, pior caso 0,931.
 
@@ -138,15 +138,15 @@ O PSNR melhorou em três de quatro fotos e o SSIM em duas. No retrato Knowles o 
 
 | Dispositivo | Tamanho da imagem | fade | repair | faces | cor | ampliar | total |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RTX 5090 | 960 x 1200 | 0.07 s | 0.36 s | 0.27 s | 0.08 s | 1.47 s | 2.26 s |
-| Ryzen 5 7500F, CPU | 480 x 600 | 0.01 s | 6.86 s | 19.36 s | 2.47 s | 106.42 s | 135.13 s |
+| RTX 5090 | 960 x 1200 | 0.07 s | 0.40 s | 0.22 s | 0.06 s | 1.51 s | 2.26 s |
+| Ryzen 5 7500F, CPU | 480 x 600 | 0.02 s | 9.26 s | 12.32 s | 1.87 s | 81.80 s | 105.27 s |
 
-A linha da CPU usa uma imagem menor porque o tamanho completo demora demais, então as duas linhas não são comparáveis pelo tamanho.
+A linha da CPU usa uma imagem menor porque o tamanho completo demora demais, então as duas linhas não são comparáveis pelo tamanho. Sem a ampliação, que vem desligada por padrão, a execução na CPU leva cerca de 22 segundos.
 
 ## Limites
 
-- O detector de arranhões foi treinado sobretudo com arranhões claros. Linhas finas escuras muitas vezes passam, o que dá para ver na tabela de antes e depois. Pinte-as no editor de máscara.
-- Em áreas com textura ou sujeira o detector dá falsos positivos, foi assim que o retrato Knowles piorou. A proteção de 15 por cento só segura os piores casos.
+- O detector de arranhões foi treinado sobretudo com arranhões claros. Os arranhões escuros são achados rodando-o sobre a imagem invertida com meio peso, então as linhas finas escuras ainda passam mais vezes que as claras. Pinte-as no editor de máscara.
+- Em áreas com textura ou sujeira o detector dá falsos positivos, foi assim que as fotos do acampamento e de Knowles perderam SSIM. A proteção de 15 por cento só segura os piores casos.
 - O GFPGAN desenha rostos. Com força 100 um rosto pode parecer outra pessoa. Por isso o padrão é 35, e a visão Inventado mostra onde ele atuou.
 - O DDColor adivinha a cor e tende a uma dominante quente. Trate a saída colorizada como uma ilustração.
 - A recuperação de tom deixa cópias sépia em cinza neutro.

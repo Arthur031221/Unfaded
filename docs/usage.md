@@ -39,7 +39,7 @@ For every input `unfaded restore` writes `name.unfaded.jpg` (or `name.unfaded-1.
 
 ## Web interface
 
-`unfaded serve` starts a server that only accepts requests from its own origin. Open the address it prints.
+`unfaded serve` starts a server that only accepts requests from its own origin. Open the address it prints. A hand painted damage mask belongs to the outline it was painted on, so it is discarded, with a note, when you move a corner, turn the print or remove an outline.
 
 1. Drop a scan. Detected outlines appear on the scan. Drag a corner to fix one, add or delete outlines, rotate a print by quarter turns.
 2. Pick steps and strengths, then press **Restore**.

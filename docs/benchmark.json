@@ -11,50 +11,50 @@
       {
         "image": "clemons-logging-camp-1926.jpg",
         "psnr_damaged": 24.899704838836332,
-        "psnr_repaired": 25.568226522363986,
+        "psnr_repaired": 25.651858859529703,
         "psnr_damaged_region": 10.690251342381611,
-        "psnr_repaired_region": 13.023933747685035,
+        "psnr_repaired_region": 13.856888242404173,
         "ssim_damaged": 0.9541174320170812,
-        "ssim_repaired": 0.9480738943917795,
-        "mask_percent": 6.24
+        "ssim_repaired": 0.9430041886904181,
+        "mask_percent": 8.94
       },
       {
         "image": "king-family.jpg",
         "psnr_damaged": 28.21721806745017,
-        "psnr_repaired": 32.52877861641861,
+        "psnr_repaired": 38.878213355841254,
         "psnr_damaged_region": 10.880180967492867,
-        "psnr_repaired_region": 15.697894275501863,
+        "psnr_repaired_region": 25.174794239574698,
         "ssim_damaged": 0.9705698352391318,
-        "ssim_repaired": 0.9839845855769217,
-        "mask_percent": 3.54
+        "ssim_repaired": 0.9884193097423446,
+        "mask_percent": 4.19
       },
       {
         "image": "knowles-family-portrait.jpg",
         "psnr_damaged": 26.961042642521686,
-        "psnr_repaired": 26.66935849616849,
+        "psnr_repaired": 27.978290018352826,
         "psnr_damaged_region": 9.317559628631125,
-        "psnr_repaired_region": 11.837712077274725,
+        "psnr_repaired_region": 19.443455283726855,
         "ssim_damaged": 0.9748030990106433,
-        "ssim_repaired": 0.9635541244009668,
-        "mask_percent": 5.28
+        "ssim_repaired": 0.9653429979433187,
+        "mask_percent": 6.53
       },
       {
         "image": "roy-family-1891.jpg",
         "psnr_damaged": 27.01213701753584,
-        "psnr_repaired": 31.119028267245966,
+        "psnr_repaired": 31.6786791487949,
         "psnr_damaged_region": 10.535143441985698,
-        "psnr_repaired_region": 15.145020537681429,
+        "psnr_repaired_region": 16.117386254142566,
         "ssim_damaged": 0.9688627522542389,
-        "ssim_repaired": 0.9809515682115325,
-        "mask_percent": 2.96
+        "ssim_repaired": 0.9823554431301987,
+        "mask_percent": 3.89
       }
     ],
     "mean_psnr_damaged": 26.772525641586007,
-    "mean_psnr_repaired": 28.971347975549264,
+    "mean_psnr_repaired": 31.046760345629668,
     "mean_psnr_damaged_region": 10.355783845122824,
-    "mean_psnr_repaired_region": 13.926140159535763,
+    "mean_psnr_repaired_region": 18.648131004962075,
     "mean_ssim_damaged": 0.9670882796302738,
-    "mean_ssim_repaired": 0.9691410431453001
+    "mean_ssim_repaired": 0.9697804848765701
   },
   "split": {
     "scans": 3,
@@ -74,10 +74,10 @@
       ],
       "seconds": {
         "fade": 0.07,
-        "repair": 0.36,
-        "faces": 0.27,
-        "color": 0.08,
-        "upscale": 1.47
+        "repair": 0.4,
+        "faces": 0.22,
+        "color": 0.06,
+        "upscale": 1.51
       },
       "total": 2.26
     },
@@ -89,14 +89,14 @@
         600
       ],
       "seconds": {
-        "fade": 0.01,
-        "repair": 6.86,
-        "faces": 19.36,
-        "color": 2.47,
-        "upscale": 106.42
+        "fade": 0.02,
+        "repair": 9.26,
+        "faces": 12.32,
+        "color": 1.87,
+        "upscale": 81.8
       },
-      "total": 135.13
+      "total": 105.27
     }
   },
-  "wall_seconds": 302.9
+  "wall_seconds": 237.9
 }

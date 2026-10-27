@@ -23,6 +23,7 @@ from .split import Quad
 ALL_STEPS = ("split", "fade", "repair", "faces", "color", "upscale")
 DEFAULT_STEPS = ("split", "fade", "repair", "faces")
 MAX_MASK_FRACTION = 0.15
+CACHE_BYTES = 2 * 1024**3  # step results kept for the sliders, by memory and not only by count
 MAX_OUTPUT_PIXELS = 120_000_000
 TONE_RANGE_LIMIT = 0.8
 
@@ -119,12 +120,22 @@ def _digest(*parts) -> str:
     return h.hexdigest()
 
 
+def _nbytes(value: object) -> int:
+    """Memory held by the arrays inside a cached result, so one 120 megapixel enlargement cannot fill the RAM."""
+    if isinstance(value, np.ndarray):
+        return value.nbytes
+    if isinstance(value, (tuple, list)):
+        return sum(map(_nbytes, value))
+    return 1024
+
+
 class Pipeline:
-    def __init__(self, device: str = "auto", cache_size: int = 48) -> None:
+    def __init__(self, device: str = "auto", cache_size: int = 48, cache_bytes: int = CACHE_BYTES) -> None:
         self.device = device
         self._models: dict[str, object] = {}
         self._cache: OrderedDict[str, object] = OrderedDict()
         self._cache_size = cache_size
+        self._cache_bytes = cache_bytes
 
     def _model(self, name: str):
         if name not in self._models:
@@ -149,7 +160,9 @@ class Pipeline:
             return self._cache[key]
         value = make()
         self._cache[key] = value
-        while len(self._cache) > self._cache_size:
+        while len(self._cache) > 1 and (
+            len(self._cache) > self._cache_size or sum(map(_nbytes, self._cache.values())) > self._cache_bytes
+        ):
             self._cache.popitem(last=False)
         return value
 

@@ -14,11 +14,11 @@
 
 </div>
 
-On four public domain photos with scratches I drew on at fixed seeds, the repair step raised mean PSNR from 26.8 dB to 29.0 dB, and the splitter found 12 of 12 prints on synthetic scans with a mean overlap (IoU) of 0.95. One of the four photos got slightly worse in PSNR. Reproduce it with `unfaded bench`, the method is under [Benchmark](#benchmark).
+On four public domain photos with scratches I drew on at fixed seeds, the repair step raised mean PSNR from 26.8 dB to 31.0 dB, and the splitter found 12 of 12 prints on synthetic scans with a mean overlap (IoU) of 0.95. PSNR improved on all four photos. `unfaded bench` reproduces it, and the method is under [Benchmark](#benchmark).
 
 ![Unfaded cutting four prints from a scan, restoring them and showing what each step changed](assets/demo.gif)
 
-[Live demo](https://arthur031221.github.io/Unfaded/) with real output on three example scans. It cannot process your own files, install the tool for that.
+There's a [live demo](https://arthur031221.github.io/Unfaded/) with real output on three example scans. It can't process your own files. Install the tool for that.
 
 ## Before and after
 
@@ -27,13 +27,13 @@ On four public domain photos with scratches I drew on at fixed seeds, the repair
 | Creased family portrait, 1891 | ![Before](assets/creased-before.jpg) | ![After](assets/creased-after.jpg) |
 | Logging camp, 1926 | ![Before](assets/camp-before.jpg) | ![After](assets/camp-after.jpg) |
 
-Both are public domain scans with synthetic scratches, a crease and dust added by `scripts/make_demo.py`. After is the default pipeline: split, tone, repair, faces at 35 percent. The dark scratches in the first row are still there. The detector finds white scratches well and thin dark lines poorly, see [Limits](#limits).
+Both are public domain scans with synthetic scratches, a crease and dust added by `scripts/make_demo.py`. After is the default pipeline: split, tone, repair, faces at 35 percent. The detector also runs on the inverted image, which is how it finds the dark scratches, but it still misses some thin dark lines, see [Limits](#limits).
 
-Models make things up, so I made the tool say so. Every step that drew pixels is labelled "invented by the model", the Invented view paints exactly where, and the original file is never touched.
+Models make things up, so the tool says so. Every step that drew pixels is labelled "invented by the model", the Invented view paints exactly where, and the original file is never touched.
 
 ## What it does
 
-Unfaded is a short pipeline. Every step can be switched off and every step reports how much of the print it changed.
+Unfaded is a short pipeline. You can switch off any step, and each one reports how much of the print it changed.
 
 | Step | What happens | Model | Default |
 | --- | --- | --- | --- |
@@ -82,7 +82,7 @@ It works but is slow, see the timings below.
 <details>
 <summary>macOS and Windows (not tested)</summary>
 
-The code has no platform specific parts, so `pip install -e .` should work. I have not run it on either system. On a Mac you can try `--device mps`, `auto` only picks CUDA or the CPU.
+The code has no platform specific parts, so `pip install -e .` should work. I haven't run it on either system. On a Mac you can try `--device mps`. `auto` only picks CUDA or the CPU.
 
 </details>
 
@@ -94,7 +94,7 @@ More in [docs/install.md](docs/install.md).
 unfaded restore examples/scans/album-damaged.jpg -o restored --explain
 ```
 
-This is the command I ran for the demo. It found four prints in the scan and wrote `album-damaged.unfaded-1.jpg` to `-4.jpg` with a sidecar each. On the RTX 5090 it took 12 seconds including model loading. `--explain` shows what each step did:
+That's the command I ran for the demo. It found four prints in the scan and wrote `album-damaged.unfaded-1.jpg` to `-4.jpg` with a sidecar each. On the RTX 5090 it took 12 seconds including model loading. `--explain` shows what each step did:
 
 ```
 album-damaged.jpg: 4 prints
@@ -114,7 +114,7 @@ unfaded split scan.jpg                         # only cut out the prints
 unfaded serve                                  # local web interface on 127.0.0.1:8765
 ```
 
-The web interface shows the outlines it found, lets you fix them, runs the pipeline and then lets you step through the result with a before and after slider, a heat map of what changed, an Invented view, a mask editor and a strength slider per face. It has light and dark themes, works on a phone and comes in English, Traditional Chinese, Simplified Chinese, Japanese, Korean, Spanish, French, German and Brazilian Portuguese. Full reference: [docs/usage.md](docs/usage.md), [docs/configuration.md](docs/configuration.md).
+The web interface shows the outlines it found and lets you fix them. Then it runs the pipeline and lets you step through the result with a before and after slider, a heat map of what changed, an Invented view, a mask editor and a strength slider per face. It has light and dark themes, works on a phone and comes in English, Traditional Chinese, Simplified Chinese, Japanese, Korean, Spanish, French, German and Brazilian Portuguese. Full reference: [docs/usage.md](docs/usage.md), [docs/configuration.md](docs/configuration.md).
 
 ## Benchmark
 
@@ -124,13 +124,13 @@ The web interface shows the outlines it found, lets you fix them, runs the pipel
 
 | Photo | PSNR damaged | PSNR repaired | SSIM damaged | SSIM repaired |
 | --- | --- | --- | --- | --- |
-| Logging camp | 24.90 | 25.57 | 0.954 | 0.948 |
-| King family | 28.22 | 32.53 | 0.971 | 0.984 |
-| Knowles family | 26.96 | 26.67 | 0.975 | 0.964 |
-| Roy family | 27.01 | 31.12 | 0.969 | 0.981 |
-| Mean | 26.77 | 28.97 | 0.967 | 0.969 |
+| Logging camp | 24.90 | 25.65 | 0.954 | 0.943 |
+| King family | 28.22 | 38.88 | 0.971 | 0.988 |
+| Knowles family | 26.96 | 27.98 | 0.975 | 0.965 |
+| Roy family | 27.01 | 31.68 | 0.969 | 0.982 |
+| Mean | 26.77 | 31.05 | 0.967 | 0.970 |
 
-PSNR improved on three of four photos and SSIM on two. On the Knowles portrait the detector marked parts of the texture as damage and the fill made it slightly worse. The mean gain in SSIM is only 0.002. Everything is measured on damage I drew myself, which is easier than real wear, so read it as a regression check and not as a promise about your photos.
+PSNR improved on all four photos and SSIM on two. On the camp and Knowles photos the detector marked parts of the texture as damage and the fill lowered SSIM slightly. The mean gain in SSIM is only 0.003. Dark scratches are found by running the detector on the inverted image with its scores halved. I picked that weight on this same seed. On seeds 11 and 23 the mean PSNR gain over the earlier single pass detector was 0.9 dB and 0.2 dB. Everything is measured on damage I drew myself, which is easier than real wear, so treat it as a regression check, not a promise about your photos.
 
 **Split.** The example prints are placed four to a scan on three backgrounds at random angles. All 12 prints were found, mean IoU 0.952, worst 0.931.
 
@@ -138,15 +138,15 @@ PSNR improved on three of four photos and SSIM on two. On the Knowles portrait t
 
 | Device | Image size | fade | repair | faces | colour | enlarge | total |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RTX 5090 | 960 x 1200 | 0.07 s | 0.36 s | 0.27 s | 0.08 s | 1.47 s | 2.26 s |
-| Ryzen 5 7500F, CPU | 480 x 600 | 0.01 s | 6.86 s | 19.36 s | 2.47 s | 106.42 s | 135.13 s |
+| RTX 5090 | 960 x 1200 | 0.07 s | 0.40 s | 0.22 s | 0.06 s | 1.51 s | 2.26 s |
+| Ryzen 5 7500F, CPU | 480 x 600 | 0.02 s | 9.26 s | 12.32 s | 1.87 s | 81.80 s | 105.27 s |
 
-The CPU row uses a smaller image because the full size takes too long, so the two rows are not comparable by size.
+The CPU row uses a smaller image because the full size takes too long, so the two rows aren't comparable by size. Without enlarge, which is off by default, the CPU run takes about 22 seconds.
 
 ## Limits
 
-- The scratch detector is trained mostly on light scratches. Thin dark lines are often missed, which is visible in the before and after table. Paint them in the mask editor.
-- On textured or dirty areas the detector gives false positives, which is how the Knowles portrait got worse. The 15 percent guard stops only the worst cases.
+- The scratch detector is trained mostly on light scratches. Dark scratches are found by running it on the inverted image at half weight, so thin dark lines are still missed more often than light ones. Paint them in the mask editor.
+- On textured or dirty areas the detector gives false positives, which is how the camp and Knowles photos lost SSIM. The 15 percent guard stops only the worst cases.
 - GFPGAN draws faces. At strength 100 a face can look like a different person. The default is 35 for that reason, and the Invented view shows where it acted.
 - DDColor guesses colour and tends to a warm cast. Treat colourised output as an illustration.
 - Tone recovery turns sepia prints neutral grey.
@@ -155,7 +155,7 @@ The CPU row uses a smaller image because the full size takes too long, so the tw
 
 ## How it compares
 
-Bringing Old Photos Back to Life, GFPGAN, LaMa and Real-ESRGAN are the models doing the work here, each is a separate research repository with its own command line. Unfaded does not improve on any of them. What it adds is the assembly: one command for a whole scan, a skip rule for steps that would hurt, a per step change view, and a record of what the models invented.
+Bringing Old Photos Back to Life, GFPGAN, LaMa and Real-ESRGAN are the models doing the work here, and each is a separate research repository with its own command line. Unfaded doesn't improve on any of them. What it adds is the assembly: one command for a whole scan, a skip rule for steps that would hurt, a per step change view, and a record of what the models invented.
 
 ## Project layout
 

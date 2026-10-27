@@ -76,6 +76,7 @@
  "status.working": "Traitement en cours",
  "status.step": "{step}, photo {n}",
  "status.done": "Terminé en {s} s",
+ "status.maskDropped": "Le masque dessiné à la main pour la photo {n} a été écarté, car le contour a changé.",
  "faces.n": "Visage {n}",
  "legend.changes": "Plus c'est clair, plus le changement est grand",
  "legend.invented": "Le rose marque les pixels dessinés par le modèle",

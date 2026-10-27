@@ -60,3 +60,14 @@ def test_well_exposed_print_skips_tone_recovery(portrait):
     )
     step = Pipeline("cpu").run(stretched, Options(steps=("fade",))).photos[0].steps[0]
     assert step.skipped and step.code
+
+
+def test_step_cache_is_bounded_by_memory():
+    pipe = Pipeline("cpu", cache_bytes=3_000_000)
+    for i in range(6):
+        pipe._memo(f"k{i}", lambda: np.zeros((600, 600, 3), np.uint8))  # about 1 MB each
+    assert len(pipe._cache) == 2
+    assert list(pipe._cache) == ["k4", "k5"]
+    # an entry larger than the whole budget is still returned and kept alone
+    pipe._memo("big", lambda: np.zeros((2000, 2000, 3), np.uint8))
+    assert list(pipe._cache) == ["big"]

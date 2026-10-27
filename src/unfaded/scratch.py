@@ -12,6 +12,9 @@ from .runtime import pick_device
 from .vendor.bopbtl.networks import UNet
 
 THRESHOLD = 0.4
+# The network was trained on light scratches. Running it on the inverted image finds dark ones, but it is less
+# sure of itself there, so those scores are scaled down. 0.5 was the best of 0.5 to 1.0 on the benchmark.
+DARK_WEIGHT = 0.5
 
 
 class ScratchDetector:
@@ -46,11 +49,16 @@ class ScratchDetector:
         return prob[0, 0].float().cpu().numpy()
 
     def detect(self, rgb: np.ndarray, scales: tuple[int, ...] = (512, 768)) -> np.ndarray:
-        """Probability map in [0, 1]. Several scales catch both wide creases and fine hairlines."""
+        """Probability map in [0, 1]. Several scales catch both wide creases and fine hairlines.
+
+        Dark scratches are found by running the same network on the inverted image.
+        """
         gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
         short = min(gray.shape)
         used = sorted({min(s, short) for s in scales})
-        return np.maximum.reduce([self._probability(gray, s) for s in used])
+        light = np.maximum.reduce([self._probability(gray, s) for s in used])
+        dark = np.maximum.reduce([self._probability(255 - gray, s) for s in used])
+        return np.maximum(light, DARK_WEIGHT * dark)
 
 
 def probability_to_mask(prob: np.ndarray, grow: int = 2, min_pixels: int = 12) -> np.ndarray:

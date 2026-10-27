@@ -76,6 +76,7 @@
  "status.working": "処理中",
  "status.step": "{step}、写真 {n}",
  "status.done": "{s}秒で完了",
+ "status.maskDropped": "輪郭が変わったため、写真 {n} の手描きマスクは破棄されました。",
  "faces.n": "顔 {n}",
  "legend.changes": "明るいほど変化が大きい",
  "legend.invented": "ピンクはモデルが描いた画素",

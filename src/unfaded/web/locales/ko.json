@@ -76,6 +76,7 @@
  "status.working": "처리 중",
  "status.step": "{step}, 사진 {n}",
  "status.done": "{s}초 만에 완료",
+ "status.maskDropped": "윤곽이 바뀌어 사진 {n}의 직접 칠한 마스크를 버렸습니다.",
  "faces.n": "얼굴 {n}",
  "legend.changes": "밝을수록 변화가 큽니다",
  "legend.invented": "분홍색은 모델이 그린 픽셀입니다",

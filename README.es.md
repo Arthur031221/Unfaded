@@ -14,7 +14,7 @@
 
 </div>
 
-En cuatro fotos de dominio público con arañazos que dibujé con semillas fijas, el paso de reparación subió el PSNR medio de 26,8 dB a 29,0 dB, y el separador encontró 12 de 12 copias en escaneos sintéticos con un solapamiento medio (IoU) de 0,95. El PSNR de una de las cuatro fotos empeoró un poco. Se reproduce con `unfaded bench`, y el método está en [Benchmark](#benchmark).
+En cuatro fotos de dominio público con arañazos que dibujé con semillas fijas, el paso de reparación subió el PSNR medio de 26,8 dB a 31,0 dB, y el separador encontró 12 de 12 copias en escaneos sintéticos con un solapamiento medio (IoU) de 0,95. El PSNR mejoró en las cuatro fotos. Se reproduce con `unfaded bench`, y el método está en [Benchmark](#benchmark).
 
 ![Unfaded recorta cuatro copias de un escaneo, las restaura y muestra lo que cambió cada paso](assets/demo.gif)
 
@@ -27,7 +27,7 @@ La [demo en vivo](https://arthur031221.github.io/Unfaded/) usa el resultado real
 | Retrato familiar con pliegue, 1891 | ![Antes](assets/creased-before.jpg) | ![Después](assets/creased-after.jpg) |
 | Campamento maderero, 1926 | ![Antes](assets/camp-before.jpg) | ![Después](assets/camp-after.jpg) |
 
-Los dos son escaneos de dominio público a los que `scripts/make_demo.py` añadió arañazos, un pliegue y polvo sintéticos. Después es el flujo por defecto: separar, tono, reparar y caras al 35 por ciento. Los arañazos oscuros de la primera fila siguen ahí. El detector encuentra bien los arañazos blancos y mal las líneas finas oscuras, mira [Límites](#límites).
+Los dos son escaneos de dominio público a los que `scripts/make_demo.py` añadió arañazos, un pliegue y polvo sintéticos. Después es el flujo por defecto: separar, tono, reparar y caras al 35 por ciento. El detector también se ejecuta sobre la imagen invertida, así encuentra los arañazos oscuros, pero aún se le escapan algunas líneas finas oscuras, mira [Límites](#límites).
 
 Los modelos se inventan cosas, así que hice que la herramienta lo diga. Cada paso que dibujó píxeles lleva la etiqueta "inventado por el modelo", la vista Inventado marca exactamente dónde, y el archivo original nunca se toca.
 
@@ -124,13 +124,13 @@ La interfaz web muestra los contornos que encontró, te deja corregirlos, ejecut
 
 | Foto | PSNR dañada | PSNR reparada | SSIM dañada | SSIM reparada |
 | --- | --- | --- | --- | --- |
-| Campamento maderero | 24.90 | 25.57 | 0.954 | 0.948 |
-| Familia King | 28.22 | 32.53 | 0.971 | 0.984 |
-| Familia Knowles | 26.96 | 26.67 | 0.975 | 0.964 |
-| Familia Roy | 27.01 | 31.12 | 0.969 | 0.981 |
-| Media | 26.77 | 28.97 | 0.967 | 0.969 |
+| Campamento maderero | 24.90 | 25.65 | 0.954 | 0.943 |
+| Familia King | 28.22 | 38.88 | 0.971 | 0.988 |
+| Familia Knowles | 26.96 | 27.98 | 0.975 | 0.965 |
+| Familia Roy | 27.01 | 31.68 | 0.969 | 0.982 |
+| Media | 26.77 | 31.05 | 0.967 | 0.970 |
 
-El PSNR mejoró en tres de cuatro fotos y el SSIM en dos. En el retrato Knowles el detector marcó parte de la textura como daño y el relleno lo empeoró un poco. La mejora media del SSIM es de solo 0,002. Todo se mide sobre daño que dibujé yo, que es más fácil que el desgaste real, así que léelo como una prueba de regresión y no como una promesa sobre tus fotos.
+El PSNR mejoró en las cuatro fotos y el SSIM en dos. En las fotos del campamento y de Knowles el detector marcó parte de la textura como daño y el relleno bajó un poco el SSIM. La mejora media del SSIM es de solo 0,003. Los arañazos oscuros se encuentran ejecutando el detector sobre la imagen invertida con sus puntuaciones a la mitad. Elegí ese peso con esta misma semilla. Con las semillas 11 y 23 la mejora media del PSNR sobre el detector anterior de una sola pasada fue de 0,9 dB y 0,2 dB. Todo se mide sobre daño que dibujé yo, que es más fácil que el desgaste real, así que léelo como una prueba de regresión y no como una promesa sobre tus fotos.
 
 **Separar.** Las copias de ejemplo se colocan de cuatro en cuatro por escaneo, sobre tres fondos y con ángulos aleatorios. Se encontraron las 12 copias, IoU medio 0,952, el peor 0,931.
 
@@ -138,15 +138,15 @@ El PSNR mejoró en tres de cuatro fotos y el SSIM en dos. En el retrato Knowles 
 
 | Dispositivo | Tamaño de imagen | fade | repair | faces | color | ampliar | total |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RTX 5090 | 960 x 1200 | 0.07 s | 0.36 s | 0.27 s | 0.08 s | 1.47 s | 2.26 s |
-| Ryzen 5 7500F, CPU | 480 x 600 | 0.01 s | 6.86 s | 19.36 s | 2.47 s | 106.42 s | 135.13 s |
+| RTX 5090 | 960 x 1200 | 0.07 s | 0.40 s | 0.22 s | 0.06 s | 1.51 s | 2.26 s |
+| Ryzen 5 7500F, CPU | 480 x 600 | 0.02 s | 9.26 s | 12.32 s | 1.87 s | 81.80 s | 105.27 s |
 
-La fila de la CPU usa una imagen más pequeña porque el tamaño completo tarda demasiado, así que las dos filas no se pueden comparar por tamaño.
+La fila de la CPU usa una imagen más pequeña porque el tamaño completo tarda demasiado, así que las dos filas no se pueden comparar por tamaño. Sin la ampliación, que está desactivada por defecto, la CPU tarda unos 22 segundos.
 
 ## Límites
 
-- El detector de arañazos está entrenado sobre todo con arañazos claros. Las líneas finas oscuras suelen escaparse, y se ve en la tabla de antes y después. Píntalas en el editor de máscara.
-- En zonas con textura o suciedad el detector da falsos positivos, así empeoró el retrato Knowles. La protección del 15 por ciento solo frena los peores casos.
+- El detector de arañazos está entrenado sobre todo con arañazos claros. Los arañazos oscuros se encuentran ejecutándolo sobre la imagen invertida con la mitad de peso, así que las líneas finas oscuras se le escapan más que las claras. Píntalas en el editor de máscara.
+- En zonas con textura o suciedad el detector da falsos positivos, así bajó el SSIM en las fotos del campamento y de Knowles. La protección del 15 por ciento solo frena los peores casos.
 - GFPGAN dibuja caras. Con fuerza 100 una cara puede parecer otra persona. Por eso el valor por defecto es 35, y la vista Inventado muestra dónde actuó.
 - DDColor adivina el color y tiende a una dominante cálida. Trata la salida coloreada como una ilustración.
 - La recuperación de tono deja las copias en sepia en gris neutro.

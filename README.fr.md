@@ -14,7 +14,7 @@
 
 </div>
 
-Sur quatre photos du domaine public où j'ai dessiné des rayures avec des graines fixes, l'étape de réparation a fait passer le PSNR moyen de 26,8 dB à 29,0 dB, et le découpeur a trouvé 12 tirages sur 12 dans des scans synthétiques, avec un recouvrement moyen (IoU) de 0,95. Le PSNR d'une des quatre photos s'est un peu dégradé. On le reproduit avec `unfaded bench`, la méthode est dans [Benchmark](#benchmark).
+Sur quatre photos du domaine public où j'ai dessiné des rayures avec des graines fixes, l'étape de réparation a fait passer le PSNR moyen de 26,8 dB à 31,0 dB, et le découpeur a trouvé 12 tirages sur 12 dans des scans synthétiques, avec un recouvrement moyen (IoU) de 0,95. Le PSNR s'est amélioré sur les quatre photos. On le reproduit avec `unfaded bench`, la méthode est dans [Benchmark](#benchmark).
 
 ![Unfaded découpe quatre tirages d'un scan, les restaure et montre ce que chaque étape a changé](assets/demo.gif)
 
@@ -27,7 +27,7 @@ La [démo en ligne](https://arthur031221.github.io/Unfaded/) montre le vrai rés
 | Portrait de famille avec pli, 1891 | ![Avant](assets/creased-before.jpg) | ![Après](assets/creased-after.jpg) |
 | Camp de bûcherons, 1926 | ![Avant](assets/camp-before.jpg) | ![Après](assets/camp-after.jpg) |
 
-Les deux sont des scans du domaine public auxquels `scripts/make_demo.py` a ajouté des rayures, un pli et de la poussière synthétiques. Après correspond au pipeline par défaut : découpe, tonalité, réparation, visages à 35 pour cent. Les rayures sombres de la première ligne sont toujours là. Le détecteur trouve bien les rayures blanches et mal les lignes sombres fines, voir [Limites](#limites).
+Les deux sont des scans du domaine public auxquels `scripts/make_demo.py` a ajouté des rayures, un pli et de la poussière synthétiques. Après correspond au pipeline par défaut : découpe, tonalité, réparation, visages à 35 pour cent. Le détecteur passe aussi sur l'image inversée, ce qui lui permet de trouver les rayures sombres, mais il rate encore certaines lignes sombres fines, voir [Limites](#limites).
 
 Les modèles inventent des choses, alors j'ai fait en sorte que l'outil le dise. Chaque étape qui a dessiné des pixels porte la mention « inventé par le modèle », la vue Inventé peint exactement où, et le fichier original n'est jamais touché.
 
@@ -124,13 +124,13 @@ L'interface web montre les contours trouvés, vous laisse les corriger, lance le
 
 | Photo | PSNR abîmée | PSNR réparée | SSIM abîmée | SSIM réparée |
 | --- | --- | --- | --- | --- |
-| Camp de bûcherons | 24.90 | 25.57 | 0.954 | 0.948 |
-| Famille King | 28.22 | 32.53 | 0.971 | 0.984 |
-| Famille Knowles | 26.96 | 26.67 | 0.975 | 0.964 |
-| Famille Roy | 27.01 | 31.12 | 0.969 | 0.981 |
-| Moyenne | 26.77 | 28.97 | 0.967 | 0.969 |
+| Camp de bûcherons | 24.90 | 25.65 | 0.954 | 0.943 |
+| Famille King | 28.22 | 38.88 | 0.971 | 0.988 |
+| Famille Knowles | 26.96 | 27.98 | 0.975 | 0.965 |
+| Famille Roy | 27.01 | 31.68 | 0.969 | 0.982 |
+| Moyenne | 26.77 | 31.05 | 0.967 | 0.970 |
 
-Le PSNR s'est amélioré sur trois photos sur quatre et le SSIM sur deux. Sur le portrait Knowles, le détecteur a marqué une partie de la texture comme dégât et le comblement l'a un peu dégradé. Le gain moyen de SSIM n'est que de 0,002. Tout est mesuré sur des dégâts que j'ai dessinés moi-même, plus faciles que l'usure réelle, donc lisez cela comme un test de régression et non comme une promesse sur vos photos.
+Le PSNR s'est amélioré sur les quatre photos et le SSIM sur deux. Sur les photos du camp et de Knowles, le détecteur a marqué une partie de la texture comme dégât et le comblement a un peu baissé le SSIM. Le gain moyen de SSIM n'est que de 0,003. Les rayures sombres sont trouvées en passant le détecteur sur l'image inversée, avec des scores divisés par deux. J'ai choisi ce poids sur cette même graine. Sur les graines 11 et 23, le gain moyen de PSNR par rapport à l'ancien détecteur à une seule passe était de 0,9 dB et 0,2 dB. Tout est mesuré sur des dégâts que j'ai dessinés moi-même, plus faciles que l'usure réelle, donc lisez cela comme un test de régression et non comme une promesse sur vos photos.
 
 **Découpe.** Les tirages d'exemple sont placés par quatre par scan sur trois fonds, avec des angles aléatoires. Les 12 tirages ont été trouvés, IoU moyen 0,952, pire cas 0,931.
 
@@ -138,15 +138,15 @@ Le PSNR s'est amélioré sur trois photos sur quatre et le SSIM sur deux. Sur le
 
 | Appareil | Taille de l'image | fade | repair | faces | couleur | agrandissement | total |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RTX 5090 | 960 x 1200 | 0.07 s | 0.36 s | 0.27 s | 0.08 s | 1.47 s | 2.26 s |
-| Ryzen 5 7500F, CPU | 480 x 600 | 0.01 s | 6.86 s | 19.36 s | 2.47 s | 106.42 s | 135.13 s |
+| RTX 5090 | 960 x 1200 | 0.07 s | 0.40 s | 0.22 s | 0.06 s | 1.51 s | 2.26 s |
+| Ryzen 5 7500F, CPU | 480 x 600 | 0.02 s | 9.26 s | 12.32 s | 1.87 s | 81.80 s | 105.27 s |
 
-La ligne CPU utilise une image plus petite parce que la taille réelle prend trop de temps, donc les deux lignes ne sont pas comparables par la taille.
+La ligne CPU utilise une image plus petite parce que la taille réelle prend trop de temps, donc les deux lignes ne sont pas comparables par la taille. Sans l'agrandissement, désactivé par défaut, l'exécution sur CPU prend environ 22 secondes.
 
 ## Limites
 
-- Le détecteur de rayures est surtout entraîné sur des rayures claires. Les lignes sombres fines sont souvent manquées, ce qui se voit dans le tableau avant et après. Peignez-les dans l'éditeur de masque.
-- Sur les zones texturées ou sales, le détecteur donne des faux positifs, c'est ainsi que le portrait Knowles s'est dégradé. La garde de 15 pour cent n'arrête que les pires cas.
+- Le détecteur de rayures est surtout entraîné sur des rayures claires. Les rayures sombres sont trouvées en le passant sur l'image inversée à moitié poids, donc les lignes sombres fines sont encore plus souvent manquées que les claires. Peignez-les dans l'éditeur de masque.
+- Sur les zones texturées ou sales, le détecteur donne des faux positifs, c'est ainsi que les photos du camp et de Knowles ont perdu du SSIM. La garde de 15 pour cent n'arrête que les pires cas.
 - GFPGAN dessine des visages. À la force 100, un visage peut ressembler à une autre personne. La valeur par défaut est donc 35, et la vue Inventé montre où il a agi.
 - DDColor devine la couleur et tire vers une dominante chaude. Traitez la sortie colorisée comme une illustration.
 - La récupération de tonalité rend les tirages sépia gris neutre.

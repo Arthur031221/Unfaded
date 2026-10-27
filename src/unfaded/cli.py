@@ -132,7 +132,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
     from .server import create_app
 
-    app = create_app(device=args.device)
+    app = create_app(device=args.device, host=args.host)
     print(f"Unfaded is running at http://{args.host}:{args.port}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
     return 0

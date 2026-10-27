@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import threading
 import uuid
 import zipfile
@@ -50,6 +51,8 @@ class Session:
     sha256: str = ""
     result: RunResult | None = None
     masks: dict[int, np.ndarray] = field(default_factory=dict)
+    mask_keys: dict[int, str] = field(default_factory=dict)  # which outline each hand painted mask belongs to
+    run_keys: dict[int, str] = field(default_factory=dict)  # the outline each photo of the last run came from
     progress: dict = field(default_factory=lambda: {"state": "idle"})
 
 
@@ -78,11 +81,21 @@ def _jpeg(rgb: np.ndarray, side: int | None = PREVIEW_SIDE) -> Response:
     return Response(imaging.encode(rgb, ".jpg", 90), media_type="image/jpeg", headers={"Cache-Control": "no-store"})
 
 
-def create_app(device: str = "auto") -> FastAPI:
+def _hostname(header: str) -> str:
+    """The name in a Host header without its port, brackets removed from an IPv6 address."""
+    if header.startswith("["):
+        return header[1:].split("]", 1)[0]
+    return header.rsplit(":", 1)[0] if header.count(":") == 1 else header
+
+
+def create_app(device: str = "auto", host: str | None = None) -> FastAPI:
+    """``host`` is the address the server binds to. When given, other Host headers are refused (DNS rebinding)."""
     app = FastAPI(title="Unfaded", version=__version__, docs_url=None, redoc_url=None)
     store = Store()
     pipeline = Pipeline(device)
     gpu_lock = threading.Lock()
+    exposed = host in (None, "0.0.0.0", "::")  # bound to every interface on purpose, any Host is fine
+    allowed_hosts = None if exposed else {host.strip("[]"), "127.0.0.1", "localhost", "::1"}
 
     def photo_of(session: Session, index: int):
         if session.result is None or not 0 <= index < len(session.result.photos):
@@ -91,6 +104,8 @@ def create_app(device: str = "auto") -> FastAPI:
 
     @app.middleware("http")
     async def local_only(request: Request, call_next):
+        if allowed_hosts and _hostname(request.headers.get("host", "")) not in allowed_hosts:
+            return JSONResponse({"detail": "unexpected Host header refused"}, status_code=403)
         origin = request.headers.get("origin")
         host = request.headers.get("host", "")
         if request.method != "GET" and origin and origin.split("://", 1)[-1] != host:
@@ -146,6 +161,16 @@ def create_app(device: str = "auto") -> FastAPI:
     async def run(sid: str, req: RunRequest):
         session = store.get(sid)
         quads = None if req.quads is None else [Quad.from_json(q) for q in req.quads]
+        shown = session.quads if quads is None else quads
+        keys = {
+            i: json.dumps([shown[i].to_json() if i < len(shown) else None, req.quarter_turns.get(i, 0)])
+            for i in range(max(len(shown), 1))
+        }
+        # A mask belongs to one outline. It no longer fits after a corner moves, a print turns or an outline goes.
+        dropped = sorted(i for i in session.masks if session.mask_keys.get(i) != keys.get(i))
+        for i in dropped:
+            del session.masks[i]
+            session.mask_keys.pop(i, None)
         try:
             options = Options(
                 steps=tuple(s for s in ALL_STEPS if s in req.steps),
@@ -178,7 +203,8 @@ def create_app(device: str = "auto") -> FastAPI:
             session.result = await run_in_threadpool(work)
         except Exception as exc:  # surface model or download problems to the UI
             raise HTTPException(500, f"{type(exc).__name__}: {exc}") from exc
-        return describe_result(session)
+        session.run_keys = keys
+        return describe_result(session) | {"masks_dropped": dropped}
 
     @app.get("/api/session/{sid}/progress")
     def progress_of(sid: str):
@@ -245,11 +271,14 @@ def create_app(device: str = "auto") -> FastAPI:
         if arr is None or arr.shape != photo.original.shape[:2]:
             raise HTTPException(422, "the mask must be a PNG with the same size as the photo")
         session.masks[index] = np.where(arr > 127, 255, 0).astype(np.uint8)
+        session.mask_keys[index] = session.run_keys.get(index, "")
         return {"ok": True}
 
     @app.delete("/api/session/{sid}/photo/{index}/mask")
     def reset_mask(sid: str, index: int):
-        store.get(sid).masks.pop(index, None)
+        session = store.get(sid)
+        session.masks.pop(index, None)
+        session.mask_keys.pop(index, None)
         return {"ok": True}
 
     @app.get("/api/session/{sid}/download.zip")

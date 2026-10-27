@@ -17,7 +17,7 @@ scan > split > fade > repair > faces > color > upscale > result + XMP sidecar
 | `pipeline.py` | `Options`, `Pipeline.run`, the step functions, a memo cache keyed by a hash of the pixels and the settings. |
 | `split.py` | Classical print detection: background estimate in Lab, colour distance plus a Sobel edge cue for white borders, connected components, `minAreaRect`, perspective warp. |
 | `fade.py` | Percentile levels, cast removal, saturation recovery. No model. |
-| `scratch.py` | The Microsoft old photo detector (a UNet) run at two scales, thresholded into a damage mask. |
+| `scratch.py` | The Microsoft old photo detector (a UNet) run at two scales on the image and on its inverse, which is how dark scratches are found, then thresholded into a damage mask. |
 | `inpaint.py` | LaMa (TorchScript) on windows around each damaged region, so a large print never needs a full size pass. |
 | `faces.py` | YuNet finds faces and five landmarks. Each face is aligned to the 512 pixel GFPGAN template, restored, mixed with the original crop by the strength and pasted back through a feathered ellipse. |
 | `colorize.py` | DDColor predicts chroma at 512 pixels. Only the a and b channels are taken, so lightness stays the scan's. |
@@ -42,7 +42,7 @@ scan > split > fade > repair > faces > color > upscale > result + XMP sidecar
 
 **Weights.** Nothing is shipped. Every file has a pinned sha256 that is checked at download and again the first time a cached file is used, and is remembered until the file changes. Plain checkpoints load with `torch.load(..., weights_only=True)`. The LaMa file is TorchScript, which can hold code, so for that one the checksum is the only protection.
 
-**Memoisation.** The web interface runs the same print many times while sliders move. `Pipeline` keeps up to 48 step results keyed by a digest of the input pixels and the step settings, so changing the face strength does not rerun the scratch detector.
+**Memoisation.** The web interface runs the same print many times while sliders move. `Pipeline` keeps up to 48 step results, and at most 2 GiB of them, keyed by a digest of the input pixels and the step settings, so changing the face strength does not rerun the scratch detector.
 
 ## Web interface and demo
 

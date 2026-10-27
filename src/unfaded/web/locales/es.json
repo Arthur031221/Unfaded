@@ -76,6 +76,7 @@
  "status.working": "Trabajando",
  "status.step": "{step}, foto {n}",
  "status.done": "Listo en {s} s",
+ "status.maskDropped": "Se descartó la máscara dibujada a mano de la foto {n} porque el contorno cambió.",
  "faces.n": "Cara {n}",
  "legend.changes": "Más claro significa un cambio mayor",
  "legend.invented": "El rosa marca píxeles que dibujó el modelo",

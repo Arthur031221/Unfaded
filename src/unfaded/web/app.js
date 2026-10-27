@@ -266,7 +266,8 @@ async function rerun() {
     state.result = result;
     state.photo = Math.min(state.photo, result.photos.length - 1);
     state.step = result.photos[state.photo].steps.some((s) => s.name === keepStep) ? keepStep : "all";
-    setStatus(t("status.done", { s: result.seconds.toFixed(1) }));
+    const dropped = (result.masks_dropped || []).map((i) => i + 1).join(", ");
+    setStatus(t("status.done", { s: result.seconds.toFixed(1) }) + (dropped ? `. ${t("status.maskDropped", { n: dropped })}` : ""));
     setMode("result");
   } catch (err) {
     setStatus(err.message, false, true);

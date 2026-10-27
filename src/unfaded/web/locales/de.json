@@ -76,6 +76,7 @@
  "status.working": "Wird verarbeitet",
  "status.step": "{step}, Foto {n}",
  "status.done": "Fertig in {s} s",
+ "status.maskDropped": "Die von Hand gemalte Maske für Foto {n} wurde verworfen, weil sich die Kontur geändert hat.",
  "faces.n": "Gesicht {n}",
  "legend.changes": "Heller bedeutet stärkere Änderung",
  "legend.invented": "Rosa zeigt Pixel, die das Modell gezeichnet hat",

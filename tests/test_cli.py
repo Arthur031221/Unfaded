@@ -66,7 +66,7 @@ def test_models_command_lists_weights(capsys):
 def test_version(capsys):
     with pytest.raises(SystemExit):
         cli.main(["--version"])
-    assert "0.1.0" in capsys.readouterr().out
+    assert "0.2.0" in capsys.readouterr().out
 
 
 def test_bench_options_parse():

@@ -1,6 +1,6 @@
 """Unfaded: restore old family photos locally and show what each step changed."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 import os as _os
 

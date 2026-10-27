@@ -76,6 +76,7 @@
  "status.working": "处理中",
  "status.step": "{step}，相片 {n}",
  "status.done": "完成，用了 {s} 秒",
+ "status.maskDropped": "第 {n} 张照片的手绘遮罩已丢弃，因为轮廓有变动。",
  "faces.n": "第 {n} 张脸",
  "legend.changes": "越亮代表改动越大",
  "legend.invented": "粉红色是模型画出来的像素",

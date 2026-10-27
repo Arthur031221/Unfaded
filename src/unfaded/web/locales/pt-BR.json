@@ -76,6 +76,7 @@
  "status.working": "Processando",
  "status.step": "{step}, foto {n}",
  "status.done": "Concluído em {s} s",
+ "status.maskDropped": "A máscara pintada à mão da foto {n} foi descartada porque o contorno mudou.",
  "faces.n": "Rosto {n}",
  "legend.changes": "Mais claro significa mudança maior",
  "legend.invented": "O rosa marca pixels desenhados pelo modelo",
