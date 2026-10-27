@@ -27,6 +27,20 @@ from .split import Quad
 WEB_DIR = Path(__file__).parent / "web"
 MAX_SESSIONS = 4
 MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+
+
+async def _read_limited(file: UploadFile) -> bytes:
+    """Read an upload in chunks and stop as soon as it passes the size limit."""
+    chunks: list[bytes] = []
+    total = 0
+    while chunk := await file.read(1024 * 1024):
+        total += len(chunk)
+        if total > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, "file too large")
+        chunks.append(chunk)
+    return b"".join(chunks)
+
+
 PREVIEW_SIDE = 2600
 
 
@@ -131,9 +145,7 @@ def create_app(device: str = "auto", host: str | None = None) -> FastAPI:
 
     @app.post("/api/session")
     async def new_session(file: UploadFile = File(...)):
-        data = await file.read()
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise HTTPException(413, "file too large")
+        data = await _read_limited(file)
         try:
             rgb = imaging.load_rgb(data)
         except Exception as exc:

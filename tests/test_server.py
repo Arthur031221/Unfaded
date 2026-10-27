@@ -49,6 +49,14 @@ def test_unreadable_upload_is_a_400(client):
     assert res.status_code == 400
 
 
+def test_oversized_upload_is_refused_without_reading_it_all(client, monkeypatch):
+    from unfaded import server
+
+    monkeypatch.setattr(server, "MAX_UPLOAD_BYTES", 1024)
+    res = client.post("/api/session", files={"file": ("big.jpg", b"\0" * (3 * 1024 * 1024), "image/jpeg")})
+    assert res.status_code == 413
+
+
 def test_unknown_session_is_a_404(client):
     assert client.get("/api/session/nope/progress").status_code == 404
 

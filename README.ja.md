@@ -64,6 +64,12 @@ unfaded models --fetch
 
 RTX 5090、torch 2.11、CUDA 12.8 で開発しました。
 
+クローンしたくない場合は、`pip install -e .` の代わりにリリースページの wheel をインストールします。
+
+```bash
+pip install https://github.com/Arthur031221/Unfaded/releases/download/v0.2.1/unfaded-0.2.1-py3-none-any.whl
+```
+
 </details>
 
 <details>

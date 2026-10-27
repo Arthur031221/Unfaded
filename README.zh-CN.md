@@ -64,6 +64,12 @@ unfaded models --fetch
 
 我在 RTX 5090、torch 2.11、CUDA 12.8 上开发。
 
+如果不想克隆仓库，可以用发布页上的 wheel 代替 `pip install -e .`：
+
+```bash
+pip install https://github.com/Arthur031221/Unfaded/releases/download/v0.2.1/unfaded-0.2.1-py3-none-any.whl
+```
+
 </details>
 
 <details>

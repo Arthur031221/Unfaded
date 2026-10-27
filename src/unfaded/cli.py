@@ -144,6 +144,16 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return run_benchmark(args)
 
 
+def _percent(text: str) -> int:
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r} is not a whole number") from None
+    if not 0 <= value <= 100:
+        raise argparse.ArgumentTypeError("must be between 0 and 100")
+    return value
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="unfaded", description="Restore old family photos on your own GPU.")
     parser.add_argument("--version", action="version", version=f"unfaded {__version__}")
@@ -153,9 +163,9 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("inputs", nargs="+", help="image files or folders")
     r.add_argument("-o", "--output", help="output folder (default: next to each input)")
     r.add_argument("--format", choices=("jpg", "png"), default="jpg")
-    r.add_argument("--face-strength", type=int, default=35, help="0 to 100, how far faces move toward the model")
+    r.add_argument("--face-strength", type=_percent, default=35, help="0 to 100, how far faces move toward the model")
     r.add_argument("--colorize", action="store_true", help="add colour to black and white prints")
-    r.add_argument("--color-strength", type=int, default=100)
+    r.add_argument("--color-strength", type=_percent, default=100)
     r.add_argument(
         "--scale",
         type=int,

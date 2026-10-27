@@ -18,7 +18,7 @@ On four public domain photos with scratches I drew on at fixed seeds, the repair
 
 ![Unfaded cutting four prints from a scan, restoring them and showing what each step changed](assets/demo.gif)
 
-There's a [live demo](https://arthur031221.github.io/Unfaded/) with real output on three example scans. It can't process your own files. Install the tool for that.
+There's a [live demo](https://arthur031221.github.io/Unfaded/) with real output on three example scans. It can't process your own files, so install the tool for that.
 
 ## Before and after
 
@@ -29,7 +29,7 @@ There's a [live demo](https://arthur031221.github.io/Unfaded/) with real output 
 
 Both are public domain scans with synthetic scratches, a crease and dust added by `scripts/make_demo.py`. After is the default pipeline: split, tone, repair, faces at 35 percent. The detector also runs on the inverted image, which is how it finds the dark scratches, but it still misses some thin dark lines, see [Limits](#limits).
 
-Models make things up, so the tool says so. Every step that drew pixels is labelled "invented by the model", the Invented view paints exactly where, and the original file is never touched.
+Models make things up, and the tool says so. Every step that drew pixels is labelled "invented by the model", the Invented view paints exactly where, and the original file is never touched.
 
 ## What it does
 
@@ -63,6 +63,12 @@ unfaded models --fetch
 ```
 
 I developed it on an RTX 5090 with torch 2.11 and CUDA 12.8.
+
+To skip the clone, install the wheel from the release page instead of `pip install -e .`:
+
+```bash
+pip install https://github.com/Arthur031221/Unfaded/releases/download/v0.2.1/unfaded-0.2.1-py3-none-any.whl
+```
 
 </details>
 

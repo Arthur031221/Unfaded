@@ -1,6 +1,6 @@
 import pytest
 
-from unfaded import cli
+from unfaded import __version__, cli
 
 
 def test_split_writes_one_file_per_print(tmp_path, scan, capsys):
@@ -66,7 +66,7 @@ def test_models_command_lists_weights(capsys):
 def test_version(capsys):
     with pytest.raises(SystemExit):
         cli.main(["--version"])
-    assert "0.2.0" in capsys.readouterr().out
+    assert __version__ in capsys.readouterr().out
 
 
 def test_bench_options_parse():
@@ -80,3 +80,12 @@ def test_enabling_upscale_alone_implies_a_scale(monkeypatch):
     args = parser.parse_args(["restore", "x.jpg", "--enable", "upscale"])
     options = cli._options(args)
     assert "upscale" in options.steps and options.scale == 2
+
+
+@pytest.mark.parametrize("flag", ["--face-strength", "--color-strength"])
+@pytest.mark.parametrize("value", ["200", "-1", "abc"])
+def test_out_of_range_strength_is_a_usage_error_not_a_traceback(flag, value, capsys):
+    with pytest.raises(SystemExit) as raised:
+        cli.main(["restore", "scan.jpg", flag, value])
+    assert raised.value.code == 2
+    assert f"argument {flag}" in capsys.readouterr().err
